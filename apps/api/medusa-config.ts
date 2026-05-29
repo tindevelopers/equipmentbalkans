@@ -20,6 +20,14 @@ module.exports = withMercur({
   },
   modules: [
     {
+      resolve: "@medusajs/medusa/auth",
+      options: {
+        providers: [
+          { resolve: "@medusajs/medusa/auth-emailpass", id: "emailpass" },
+        ],
+      },
+    },
+    {
       resolve: '@mercurjs/core/modules/admin-ui',
       options: {
         appDir: '',

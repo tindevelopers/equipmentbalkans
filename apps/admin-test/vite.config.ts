@@ -19,5 +19,25 @@ export default defineConfig(({ mode }) => {
         ...(vendorUrl ? { vendorUrl } : {}),
       }),
     ],
+    optimizeDeps: {
+      exclude: ['@mercurjs/admin', '@mercurjs/vendor', '@medusajs/dashboard'],
+      esbuildOptions: {
+        plugins: [
+          {
+            name: 'virtual-medusa-stub',
+            setup(build) {
+              build.onResolve({ filter: /^virtual:medusa\// }, (args) => ({
+                path: args.path,
+                namespace: 'virtual-medusa',
+              }))
+              build.onLoad({ filter: /.*/, namespace: 'virtual-medusa' }, () => ({
+                contents: 'export default {}',
+                loader: 'js',
+              }))
+            },
+          },
+        ],
+      },
+    },
   }
 })
