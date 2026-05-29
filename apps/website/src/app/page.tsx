@@ -1,7 +1,10 @@
 "use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import { getProducts, MedusaProduct } from "@/lib/medusa";
+import ListingCard from "@/components/ListingCard";
 
 /* ── Icons ── */
 const SearchIco = ({ w = 17 }: { w?: number }) => (
@@ -147,52 +150,7 @@ const CATS = [
   { id: "all", label: "All Categories", Icon: IcoGrid },
 ];
 
-const BADGE_CFG: Record<string, string> = {
-  "LIKE NEW": "#15803D",
-  EXCELLENT: "#0E7490",
-  "VERY GOOD": "#B45309",
-  GOOD: "#C2410C",
-  NEW: "#2563EB",
-};
 
-const LISTINGS = [
-  { id: 1, title: "CNC Machine Centre", city: "Subotica", price: "48,500", badge: "LIKE NEW", grad: ["#0F172A", "#1E293B"] },
-  { id: 2, title: "Atlas Copco GA 75 Compressor", city: "Novi Sad", price: "7,900", badge: "EXCELLENT", grad: ["#0F172A", "#1E293B"] },
-  { id: 3, title: "Bottling & Filling Line", city: "Čačak", price: "29,800", badge: "VERY GOOD", grad: ["#1C1208", "#2A1C10"] },
-  { id: 4, title: "Hyster H3.5FT Forklift", city: "Belgrade", price: "11,250", badge: "GOOD", grad: ["#1E0E0A", "#2C1812"] },
-  { id: 5, title: "Pallet Racking System", city: "Šabac", price: "2,350", badge: "NEW", grad: ["#0F172A", "#1E293B"] },
-  { id: 6, title: "Industrial Generator 500kVA", city: "Niš", price: "8,750", badge: "LIKE NEW", grad: ["#141618", "#1E293B"] },
-];
-
-/* ── ListingCard ── */
-function ListingCard({ item }: { item: typeof LISTINGS[0] }) {
-  const [saved, setSaved] = useState(false);
-  return (
-    <a href="/marketplace" className="l-card" style={{ display: "block" }}>
-      <div className="l-card-img" style={{ background: `linear-gradient(135deg,${item.grad[0]},${item.grad[1]})` }}>
-        <svg width="52" height="42" viewBox="0 0 52 42" fill="none" opacity="0.12">
-          <rect x="2" y="10" width="30" height="22" rx="2" stroke="white" strokeWidth="1.5"/>
-          <rect x="2" y="4" width="18" height="8" rx="1" stroke="white" strokeWidth="1.5"/>
-          <circle cx="12" cy="35" r="4" stroke="white" strokeWidth="1.5"/>
-          <circle cx="24" cy="35" r="4" stroke="white" strokeWidth="1.5"/>
-          <rect x="34" y="16" width="16" height="12" rx="1" stroke="white" strokeWidth="1.5"/>
-        </svg>
-        <div className="l-card-badge" style={{ background: BADGE_CFG[item.badge] || "#475569" }}>{item.badge}</div>
-        <button
-          className="l-card-save"
-          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setSaved(!saved); }}
-        >
-          <HeartIco filled={saved} />
-        </button>
-      </div>
-      <div className="l-card-body">
-        <div className="l-card-title">{item.title}</div>
-        <div className="l-card-loc"><PinIco />{item.city}</div>
-        <div className="l-card-price">€ {item.price}</div>
-      </div>
-    </a>
-  );
-}
 
 /* ── EBLogo ── */
 function EBLogo({ theme }: { theme: string }) {
@@ -214,6 +172,16 @@ export default function HomePage() {
   useEffect(() => {
     const stored = document.documentElement.getAttribute("data-theme") || "dark";
     setTheme(stored);
+  }, []);
+
+  const [listings, setListings] = useState<MedusaProduct[]>([]);
+
+  useEffect(() => {
+    getProducts({ limit: "6" })
+      .then(data => setListings(data.products))
+      .catch(() => {
+        setListings([]);
+      });
   }, []);
 
   const toggleTheme = () => {
@@ -428,7 +396,7 @@ export default function HomePage() {
             </a>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 14 }}>
-            {LISTINGS.map(item => <ListingCard key={item.id} item={item} />)}
+            {listings.map(p => <ListingCard key={p.id} product={p} />)}
           </div>
         </div>
       </section>
